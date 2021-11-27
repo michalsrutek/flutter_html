@@ -182,7 +182,7 @@ Once the above issue is resolved, the aforementioned compromises will go away. C
 | `shrinkWrap` | A `bool` used while rendering different widgets to specify whether they should be shrink-wrapped or not, like `ContainerSpan` |
 | `onImageTap` | A function that defines what the widget should do when an image is tapped. The function exposes the `src` of the image as a `String` to use in your implementation. |
 | `tagsList` | A list of elements the `Html` widget should render. The list should contain the tags of the HTML elements you wish to include.  |
-| `style` | A powerful API that allows you to customize the style that should be used when rendering a specific HTMl tag. |
+| `style` | A powerful API that allows you to customize the style that should be used when rendering a specific HTML tag. |
 | `navigationDelegateForIframe` | Allows you to set the `NavigationDelegate` for the `WebView`s of all the iframes rendered by the `Html` widget. |
 | `customImageRender` | A powerful API that allows you to fully customize how images are loaded. |
 | `selectionControls` |  A custom text selection controls that allow you to override default toolbar and build toolbar with custom text selection options. See an [example](https://github.com/justinmc/flutter-text-selection-menu-examples/blob/master/lib/custom_menu_page.dart). |
