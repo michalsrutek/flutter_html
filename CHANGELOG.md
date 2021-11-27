@@ -1,4 +1,26 @@
-## [2.1.1] - July 27, 2021:
+## [2.1.5] - October 7, 2021:
+* Ignore unsupported custom style selectors when using fromCss
+* Fix SVG tag usage inside tables
+* Properly fix regression in usage of line breaks
+
+## [2.1.4] - October 3, 2021:
+* Fix regression in usage of line breaks in body being stripped
+
+## [2.1.3] - October 1, 2021:
+* Update minimum versions of dependencies for Flutter 2.5 compatibility
+* Extended and fixed support for css shadow
+* Fix block tags with explicit whitespace from being stripped
+
+## [2.1.2] - September 2, 2021:
+* Allow setting selectionControls with SelectableHtml
+* Fix onLinkTap not working with SelectableHtml
+* Don't crash when parsing unsupported :hover
+* Prevent endless loading when using animated images
+
+## [2.1.1] - July 28, 2021:
+* Stable release with all 2.1.1-preview.X changes
+
+## [2.1.1-preview.0] - July 27, 2021:
 * Improves hr tag support
 * Fixes a leading whitespace issue
 * Fixes some crashes with CSS parsing
