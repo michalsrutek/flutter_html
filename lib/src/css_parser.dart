@@ -350,9 +350,9 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
             }
           }
           if (image != null) {
-            style.listStyleImage =
-                ExpressionMapping.expressionToListStyleImage(image) ??
-                    style.listStyleImage;
+            style.listStyleType =
+                ExpressionMapping.expressionToListStyleType(image) ??
+                    style.listStyleType;
           } else if (type != null) {
             style.listStyleType =
                 ExpressionMapping.expressionToListStyleType(type) ??
@@ -361,9 +361,9 @@ Style declarationsToStyle(Map<String, List<css.Expression>> declarations) {
           break;
         case 'list-style-image':
           if (value.first is css.UriTerm) {
-            style.listStyleImage = ExpressionMapping.expressionToListStyleImage(
+            style.listStyleType = ExpressionMapping.expressionToListStyleType(
                     value.first as css.UriTerm) ??
-                style.listStyleImage;
+                style.listStyleType;
           }
           break;
         case 'list-style-position':
@@ -940,12 +940,35 @@ class ExpressionMapping {
     return LineHeight.normal;
   }
 
-  static ListStyleImage? expressionToListStyleImage(css.UriTerm value) {
-    return ListStyleImage(value.text);
-  }
-
   static ListStyleType? expressionToListStyleType(css.LiteralTerm value) {
-    return ListStyleType.fromName(value.text);
+    if (value is css.UriTerm) {
+      return ListStyleType.fromImage(value.text);
+    }
+    switch (value.text) {
+      case 'disc':
+        return ListStyleType.disc;
+      case 'circle':
+        return ListStyleType.circle;
+      case 'decimal':
+        return ListStyleType.decimal;
+      case 'lower-alpha':
+        return ListStyleType.lowerAlpha;
+      case 'lower-latin':
+        return ListStyleType.lowerLatin;
+      case 'lower-roman':
+        return ListStyleType.lowerRoman;
+      case 'square':
+        return ListStyleType.square;
+      case 'upper-alpha':
+        return ListStyleType.upperAlpha;
+      case 'upper-latin':
+        return ListStyleType.upperLatin;
+      case 'upper-roman':
+        return ListStyleType.upperRoman;
+      case 'none':
+        return ListStyleType.none;
+    }
+    return null;
   }
 
   static Width? expressionToWidth(css.Expression value) {

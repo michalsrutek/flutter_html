@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html/src/css_parser.dart';
-import 'package:flutter_html/src/style/marker.dart';
 
 //Export Style value-unit APIs
 export 'package:flutter_html/src/style/margin.dart';
@@ -26,18 +25,6 @@ class Style {
   /// Inherited: yes,
   /// Default: unspecified,
   Color? color;
-
-  /// CSS attribute "`counter-increment`"
-  ///
-  /// Inherited: no
-  /// Initial: none
-  Map<String, int?>? counterIncrement;
-
-  /// CSS attribute "`counter-reset`"
-  ///
-  /// Inherited: no
-  /// Initial: none
-  Map<String, int?>? counterReset;
 
   /// CSS attribute "`direction`"
   ///
@@ -99,16 +86,10 @@ class Style {
   /// Default: normal (0),
   double? letterSpacing;
 
-  /// CSS attribute "`list-style-image`"
-  ///
-  /// Inherited: yes,
-  /// Default: TODO
-  ListStyleImage? listStyleImage;
-
   /// CSS attribute "`list-style-type`"
   ///
   /// Inherited: yes,
-  /// Default: ListStyleType.disc
+  /// Default: ListStyleType.DISC
   ListStyleType? listStyleType;
 
   /// CSS attribute "`list-style-position`"
@@ -122,12 +103,6 @@ class Style {
   /// Inherited: no,
   /// Default: EdgeInsets.zero
   EdgeInsets? padding;
-
-  /// CSS pseudo-element "`::marker`"
-  ///
-  /// Inherited: no,
-  /// Default: null
-  Marker? marker;
 
   /// CSS attribute "`margin`"
   ///
@@ -234,8 +209,6 @@ class Style {
   Style({
     this.backgroundColor = Colors.transparent,
     this.color,
-    this.counterIncrement,
-    this.counterReset,
     this.direction,
     this.display,
     this.fontFamily,
@@ -247,11 +220,9 @@ class Style {
     this.height,
     this.lineHeight,
     this.letterSpacing,
-    this.listStyleImage,
     this.listStyleType,
     this.listStylePosition,
     this.padding,
-    this.marker,
     this.margin,
     this.textAlign,
     this.textDecoration,
@@ -279,13 +250,13 @@ class Style {
   }
 
   static Map<String, Style> fromThemeData(ThemeData theme) => {
-        'h1': Style.fromTextStyle(theme.textTheme.headline1!),
-        'h2': Style.fromTextStyle(theme.textTheme.headline2!),
-        'h3': Style.fromTextStyle(theme.textTheme.headline3!),
-        'h4': Style.fromTextStyle(theme.textTheme.headline4!),
-        'h5': Style.fromTextStyle(theme.textTheme.headline5!),
-        'h6': Style.fromTextStyle(theme.textTheme.headline6!),
-        'body': Style.fromTextStyle(theme.textTheme.bodyText2!),
+        'h1': Style.fromTextStyle(theme.textTheme.displayLarge!),
+        'h2': Style.fromTextStyle(theme.textTheme.displayMedium!),
+        'h3': Style.fromTextStyle(theme.textTheme.displaySmall!),
+        'h4': Style.fromTextStyle(theme.textTheme.headlineMedium!),
+        'h5': Style.fromTextStyle(theme.textTheme.headlineSmall!),
+        'h6': Style.fromTextStyle(theme.textTheme.titleLarge!),
+        'body': Style.fromTextStyle(theme.textTheme.bodyMedium!),
       };
 
   static Map<String, Style> fromCss(
@@ -330,8 +301,6 @@ class Style {
     return copyWith(
       backgroundColor: other.backgroundColor,
       color: other.color,
-      counterIncrement: other.counterIncrement,
-      counterReset: other.counterReset,
       direction: other.direction,
       display: other.display,
       fontFamily: other.fontFamily,
@@ -343,14 +312,12 @@ class Style {
       height: other.height,
       lineHeight: other.lineHeight,
       letterSpacing: other.letterSpacing,
-      listStyleImage: other.listStyleImage,
       listStyleType: other.listStyleType,
       listStylePosition: other.listStylePosition,
       padding: other.padding,
       //TODO merge EdgeInsets
       margin: other.margin,
       //TODO merge Margins
-      marker: other.marker,
       textAlign: other.textAlign,
       textDecoration: other.textDecoration,
       textDecorationColor: other.textDecorationColor,
@@ -400,7 +367,6 @@ class Style {
       fontWeight: child.fontWeight ?? fontWeight,
       lineHeight: finalLineHeight,
       letterSpacing: child.letterSpacing ?? letterSpacing,
-      listStyleImage: child.listStyleImage ?? listStyleImage,
       listStyleType: child.listStyleType ?? listStyleType,
       listStylePosition: child.listStylePosition ?? listStylePosition,
       textAlign: child.textAlign ?? textAlign,
@@ -420,8 +386,6 @@ class Style {
   Style copyWith({
     Color? backgroundColor,
     Color? color,
-    Map<String, int?>? counterIncrement,
-    Map<String, int?>? counterReset,
     TextDirection? direction,
     Display? display,
     String? fontFamily,
@@ -433,12 +397,10 @@ class Style {
     Height? height,
     LineHeight? lineHeight,
     double? letterSpacing,
-    ListStyleImage? listStyleImage,
     ListStyleType? listStyleType,
     ListStylePosition? listStylePosition,
     EdgeInsets? padding,
     Margins? margin,
-    Marker? marker,
     TextAlign? textAlign,
     TextDecoration? textDecoration,
     Color? textDecorationColor,
@@ -462,8 +424,6 @@ class Style {
     return Style(
       backgroundColor: backgroundColor ?? this.backgroundColor,
       color: color ?? this.color,
-      counterIncrement: counterIncrement ?? this.counterIncrement,
-      counterReset: counterReset ?? this.counterReset,
       direction: direction ?? this.direction,
       display: display ?? this.display,
       fontFamily: fontFamily ?? this.fontFamily,
@@ -475,12 +435,10 @@ class Style {
       height: height ?? this.height,
       lineHeight: lineHeight ?? this.lineHeight,
       letterSpacing: letterSpacing ?? this.letterSpacing,
-      listStyleImage: listStyleImage ?? this.listStyleImage,
       listStyleType: listStyleType ?? this.listStyleType,
       listStylePosition: listStylePosition ?? this.listStylePosition,
       padding: padding ?? this.padding,
       margin: margin ?? this.margin,
-      marker: marker ?? this.marker,
       textAlign: textAlign ?? this.textAlign,
       textDecoration: textDecoration ?? this.textDecoration,
       textDecorationColor: textDecorationColor ?? this.textDecorationColor,
@@ -590,79 +548,30 @@ enum Display {
   none,
 }
 
-enum ListStyleType {
-  arabicIndic('arabic-indic'),
-  armenian('armenian'),
-  lowerArmenian('lower-armenian'),
-  upperArmenian('upper-armenian'),
-  bengali('bengali'),
-  cambodian('cambodian'),
-  khmer('khmer'),
-  circle('circle'),
-  cjkDecimal('cjk-decimal'),
-  cjkEarthlyBranch('cjk-earthly-branch'),
-  cjkHeavenlyStem('cjk-heavenly-stem'),
-  cjkIdeographic('cjk-ideographic'),
-  decimal('decimal'),
-  decimalLeadingZero('decimal-leading-zero'),
-  devanagari('devanagari'),
-  disc('disc'),
-  disclosureClosed('disclosure-closed'),
-  disclosureOpen('disclosure-open'),
-  ethiopicNumeric('ethiopic-numeric'),
-  georgian('georgian'),
-  gujarati('gujarati'),
-  gurmukhi('gurmukhi'),
-  hebrew('hebrew'),
-  hiragana('hiragana'),
-  hiraganaIroha('hiragana-iroha'),
-  japaneseFormal('japanese-formal'),
-  japaneseInformal('japanese-informal'),
-  kannada('kannada'),
-  katakana('katakana'),
-  katakanaIroha('katakana-iroha'),
-  koreanHangulFormal('korean-hangul-formal'),
-  koreanHanjaInformal('korean-hanja-informal'),
-  koreanHanjaFormal('korean-hanja-formal'),
-  lao('lao'),
-  lowerAlpha('lower-alpha'),
-  lowerGreek('lower-greek'),
-  lowerLatin('lower-latin'),
-  lowerRoman('lower-roman'),
-  malayalam('malayalam'),
-  mongolian('mongolian'),
-  myanmar('myanmar'),
-  none('none'),
-  oriya('oriya'),
-  persian('persian'),
-  simpChineseFormal('simp-chinese-formal'),
-  simpChineseInformal('simp-chinese-informal'),
-  square('square'),
-  tamil('tamil'),
-  telugu('telugu'),
-  thai('thai'),
-  tibetan('tibetan'),
-  tradChineseFormal('trad-chinese-formal'),
-  tradChineseInformal('trad-chinese-informal'),
-  upperAlpha('upper-alpha'),
-  upperLatin('upper-latin'),
-  upperRoman('upper-roman');
+class ListStyleType {
+  final String text;
+  final String type;
+  final Widget? widget;
 
-  final String counterStyle;
+  const ListStyleType(this.text, {this.type = "marker", this.widget});
 
-  const ListStyleType(this.counterStyle);
+  factory ListStyleType.fromImage(String url) =>
+      ListStyleType(url, type: "image");
 
-  factory ListStyleType.fromName(String name) {
-    return ListStyleType.values.firstWhere((value) {
-      return name == value.counterStyle;
-    });
-  }
-}
+  factory ListStyleType.fromWidget(Widget widget) =>
+      ListStyleType("", widget: widget, type: "widget");
 
-class ListStyleImage {
-  final String uriText;
-
-  const ListStyleImage(this.uriText);
+  static const lowerAlpha = ListStyleType("LOWER_ALPHA");
+  static const upperAlpha = ListStyleType("UPPER_ALPHA");
+  static const lowerLatin = ListStyleType("LOWER_LATIN");
+  static const upperLatin = ListStyleType("UPPER_LATIN");
+  static const circle = ListStyleType("CIRCLE");
+  static const disc = ListStyleType("DISC");
+  static const decimal = ListStyleType("DECIMAL");
+  static const lowerRoman = ListStyleType("LOWER_ROMAN");
+  static const upperRoman = ListStyleType("UPPER_ROMAN");
+  static const square = ListStyleType("SQUARE");
+  static const none = ListStyleType("NONE");
 }
 
 enum ListStylePosition {

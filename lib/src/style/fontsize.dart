@@ -5,7 +5,11 @@ class FontSize extends LengthOrPercent {
 
   // These values are calculated based off of the default (`medium`)
   // being 14px.
-  // TODO calculate from https://w3c.github.io/csswg-drafts/css-fonts-3/#absolute-size-value
+  //
+  // TODO(Sub6Resources): This seems to override Flutter's accessibility text scaling.
+  //
+  // Negative values are computed during parsing to be a percentage of
+  // the parent style's font size.
   static final xxSmall = FontSize(7.875);
   static final xSmall = FontSize(8.75);
   static final small = FontSize(11.375);

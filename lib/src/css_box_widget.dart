@@ -57,10 +57,6 @@ class CssBoxWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final markerBox = style.listStylePosition == ListStylePosition.outside
-        ? _generateMarkerBoxSpan(style)
-        : null;
-
     return _CSSBoxRenderer(
       width: style.width ?? Width.auto(),
       height: style.height ?? Height.auto(),
@@ -72,18 +68,15 @@ class CssBoxWidget extends StatelessWidget {
       emValue: _calculateEmValue(style, context),
       textDirection: _checkTextDirection(context, textDirection),
       shrinkWrap: shrinkWrap,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: style.border,
-            color: style.backgroundColor, //Colors the padding and content boxes
-          ),
-          width: _shouldExpandToFillBlock() ? double.infinity : null,
-          padding: style.padding ?? EdgeInsets.zero,
-          child: child,
+      child: Container(
+        decoration: BoxDecoration(
+          border: style.border,
+          color: style.backgroundColor, //Colors the padding and content boxes
         ),
-        if (markerBox != null) Text.rich(markerBox),
-      ],
+        width: _shouldExpandToFillBlock() ? double.infinity : null,
+        padding: style.padding ?? EdgeInsets.zero,
+        child: child,
+      ),
     );
   }
 
@@ -94,24 +87,16 @@ class CssBoxWidget extends StatelessWidget {
       return Container();
     }
 
-    // Generate an inline marker box if the list-style-position is set to
-    // inside. Otherwise the marker box will be added elsewhere.
-    if (style.listStylePosition == ListStylePosition.inside) {
-      final inlineMarkerBox = _generateMarkerBoxSpan(style);
-      if (inlineMarkerBox != null) {
-        children.insert(0, inlineMarkerBox);
-      }
-    }
-
-    return RichText(
-      text: TextSpan(
+    return Text.rich(
+      TextSpan(
         style: style.generateTextStyle(),
         children: children,
       ),
-      textAlign: style.textAlign ?? TextAlign.start,
+      style: style.generateTextStyle(),
+      textAlign: style.textAlign,
       textDirection: style.direction,
       maxLines: style.maxLines,
-      overflow: style.textOverflow ?? TextOverflow.clip,
+      overflow: style.textOverflow,
     );
   }
 
@@ -137,43 +122,6 @@ class CssBoxWidget extends StatelessWidget {
       selectionControls: selectionControls,
       scrollPhysics: scrollPhysics,
     );
-  }
-
-  static InlineSpan? _generateMarkerBoxSpan(Style style) {
-    if (style.display == Display.listItem) {
-      // First handle listStyleImage
-      if (style.listStyleImage != null) {
-        return WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
-          child: Image.network(
-            style.listStyleImage!.uriText,
-            errorBuilder: (_, __, ___) {
-              if (style.marker?.content.replacementContent?.isNotEmpty ??
-                  false) {
-                return Text.rich(
-                  TextSpan(
-                    text: style.marker!.content.replacementContent!,
-                    style: style.marker!.style?.generateTextStyle(),
-                  ),
-                );
-              }
-
-              return Container();
-            },
-          ),
-        );
-      }
-
-      // Display list marker with given style
-      if (style.marker?.content.replacementContent?.isNotEmpty ?? false) {
-        return TextSpan(
-          text: style.marker!.content.replacementContent!,
-          style: style.marker!.style?.generateTextStyle(),
-        );
-      }
-    }
-
-    return null;
   }
 
   /// Whether or not the content-box should expand its width to fill the
@@ -202,7 +150,7 @@ class CssBoxWidget extends StatelessWidget {
 class _CSSBoxRenderer extends MultiChildRenderObjectWidget {
   _CSSBoxRenderer({
     Key? key,
-    required super.children,
+    required Widget child,
     required this.display,
     required this.margins,
     required this.width,
@@ -213,7 +161,7 @@ class _CSSBoxRenderer extends MultiChildRenderObjectWidget {
     required this.childIsReplaced,
     required this.emValue,
     required this.shrinkWrap,
-  }) : super(key: key);
+  }) : super(key: key, children: [child]);
 
   /// The Display type of the element
   final Display display;
@@ -494,11 +442,8 @@ class _RenderCSSBox extends RenderBox
     double width = containingBlockSize.width;
     double height = containingBlockSize.height;
 
-    assert(firstChild != null);
-    RenderBox child = firstChild!;
-
-    final CSSBoxParentData parentData = child.parentData! as CSSBoxParentData;
-    RenderBox? markerBoxChild = parentData.nextSibling;
+    RenderBox? child = firstChild;
+    assert(child != null);
 
     // Calculate child size
     final childConstraints = constraints.copyWith(
@@ -515,10 +460,7 @@ class _RenderCSSBox extends RenderBox
       minWidth: (this.width.unit != Unit.auto) ? this.width.value : 0,
       minHeight: (this.height.unit != Unit.auto) ? this.height.value : 0,
     );
-    final Size childSize = layoutChild(child, childConstraints);
-    if (markerBoxChild != null) {
-      layoutChild(markerBoxChild, childConstraints);
-    }
+    final Size childSize = layoutChild(child!, childConstraints);
 
     // Calculate used values of margins based on rules
     final usedMargins = _calculateUsedMargins(childSize, containingBlockSize);
@@ -569,55 +511,43 @@ class _RenderCSSBox extends RenderBox
     );
     size = sizes.parentSize;
 
-    assert(firstChild != null);
-    RenderBox child = firstChild!;
+    RenderBox? child = firstChild;
+    while (child != null) {
+      final CSSBoxParentData childParentData =
+          child.parentData! as CSSBoxParentData;
 
-    final CSSBoxParentData childParentData =
-        child.parentData! as CSSBoxParentData;
+      // Calculate used margins based on constraints and child size
+      final usedMargins =
+          _calculateUsedMargins(sizes.childSize, constraints.biggest);
+      final leftMargin = usedMargins.left?.value ?? 0;
+      final topMargin = usedMargins.top?.value ?? 0;
 
-    // Calculate used margins based on constraints and child size
-    final usedMargins =
-        _calculateUsedMargins(sizes.childSize, constraints.biggest);
-    final leftMargin = usedMargins.left?.value ?? 0;
-    final topMargin = usedMargins.top?.value ?? 0;
+      double leftOffset = 0;
+      double topOffset = 0;
+      switch (display) {
+        case Display.block:
+          leftOffset = leftMargin;
+          topOffset = topMargin;
+          break;
+        case Display.inline:
+          leftOffset = leftMargin;
+          break;
+        case Display.inlineBlock:
+          leftOffset = leftMargin;
+          topOffset = topMargin;
+          break;
+        case Display.listItem:
+          leftOffset = leftMargin;
+          topOffset = topMargin;
+          break;
+        case Display.none:
+          //No offset
+          break;
+      }
+      childParentData.offset = Offset(leftOffset, topOffset);
 
-    double leftOffset = 0;
-    double topOffset = 0;
-    switch (display) {
-      case Display.block:
-        leftOffset = leftMargin;
-        topOffset = topMargin;
-        break;
-      case Display.inline:
-        leftOffset = leftMargin;
-        break;
-      case Display.inlineBlock:
-        leftOffset = leftMargin;
-        topOffset = topMargin;
-        break;
-      case Display.listItem:
-        leftOffset = leftMargin;
-        topOffset = topMargin;
-        break;
-      case Display.none:
-        //No offset
-        break;
-    }
-    childParentData.offset = Offset(leftOffset, topOffset);
-    assert(child.parentData == childParentData);
-
-    // Now, layout the marker box if it exists:
-    RenderBox? markerBox = childParentData.nextSibling;
-    if (markerBox != null) {
-      final markerBoxParentData = markerBox.parentData! as CSSBoxParentData;
-      final distance = (child.getDistanceToBaseline(TextBaseline.alphabetic,
-                  onlyReal: true) ??
-              0) +
-          topOffset;
-      final offsetHeight = distance -
-          (markerBox.getDistanceToBaseline(TextBaseline.alphabetic) ??
-              markerBox.size.height);
-      markerBoxParentData.offset = Offset(-markerBox.size.width, offsetHeight);
+      assert(child.parentData == childParentData);
+      child = childParentData.nextSibling;
     }
   }
 
